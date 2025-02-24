@@ -3,12 +3,12 @@
 @tailwind utilities;
 
 :root {
-  --color-navy-dark: #1a237e;
-  --color-navy-light: #534bae;
-  --color-pink-light: #fda7df;
-  --color-gray-medium: #64748b;
+  --color-navy-dark: #1B1464;
+  --color-navy-light: #4834d4;
   --color-gray-light: #f5f6fa;
+  --color-gray-medium: #718093;
   --color-gray-dark: #2f3640;
+  --color-pink-light: #FDA7DF;
 }
 
 @layer base {
@@ -24,28 +24,13 @@
 
 @layer components {
   .text-gradient {
-    background: linear-gradient(to right, var(--color-navy-light), var(--color-pink-light));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    @apply bg-gradient-to-r from-[var(--color-navy-dark)] to-[var(--color-navy-light)] bg-clip-text text-transparent;
   }
 }
 
 /* アニメーション */
 .animate-fade-in {
-  animation: fadeIn 0.8s ease-out forwards;
-}
-
-.animate-fade-in-delayed {
-  animation: fadeIn 0.8s ease-out 0.5s forwards;
-}
-
-.animate-fade-in-delayed-more {
-  animation: fadeIn 0.8s ease-out 0.8s forwards;
-}
-
-.animate-pulse {
-  animation: pulse 4s ease-in-out infinite;
+  animation: fadeIn 0.5s ease-in-out;
 }
 
 .animate-slide-up {
@@ -55,22 +40,9 @@
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 0.5;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.7;
-    transform: scale(1.05);
   }
 }
 
