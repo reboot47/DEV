@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-navy: #1B1464;
+  --color-navy-light: #4834d4;
+  --color-gray: #718093;
+  --color-pink-light: #FDA7DF;
+}
+
+@layer base {
+  body {
+    @apply bg-white text-navy antialiased;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
