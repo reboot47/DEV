@@ -1,30 +1,33 @@
-import { motion } from 'framer-motion';
-import { ButtonHTMLAttributes, forwardRef } from 'react';
+import { forwardRef } from 'react';
+import { motion, HTMLMotionProps } from 'framer-motion';
 import { theme } from '@/styles/theme';
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline';
-  isLoading?: boolean;
+type ButtonVariant = 'primary' | 'secondary' | 'outline';
+
+interface ButtonProps extends Omit<HTMLMotionProps<"button">, "as"> {
+  variant?: ButtonVariant;
   as?: 'button' | 'a';
   href?: string;
+  isLoading?: boolean;
+  children?: React.ReactNode;
 }
 
-const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ children, variant = 'primary', isLoading, className = '', as = 'button', href, ...props }, ref) => {
-    const baseStyle = 'px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed';
-    
-    const variants = {
-      primary: `bg-gradient-to-r from-navy-dark to-navy-light text-white ${baseStyle}`,
-      secondary: `bg-pink-light text-navy-dark ${baseStyle}`,
-      outline: `border-2 border-navy-dark text-navy-dark hover:bg-navy-dark hover:text-white ${baseStyle}`,
-    };
+const variants = {
+  primary: 'bg-gradient-to-r from-[var(--color-navy-dark)] to-[var(--color-navy-light)] text-white hover:opacity-90',
+  secondary: 'bg-white text-[var(--color-navy-dark)] border-2 border-[var(--color-navy-dark)] hover:bg-gray-50',
+  outline: 'bg-transparent text-[var(--color-navy-dark)] border-2 border-[var(--color-navy-dark)] hover:bg-gray-50',
+};
 
-    const Component = as === 'a' ? motion.a : motion.button;
+export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonProps>(
+  ({ children, variant = 'primary', className = '', as: Component = 'button', isLoading, href, ...props }, ref) => {
+    const baseClassName = 'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
+
+    const MotionComponent = motion[Component as 'button' | 'a'];
 
     return (
-      <Component
-        ref={ref as any}
-        className={`${variants[variant]} ${className}`}
+      <MotionComponent
+        ref={ref}
+        className={`${variants[variant]} ${baseClassName} ${className}`}
         whileTap={{ scale: 0.98 }}
         href={href}
         {...props}
@@ -36,11 +39,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ) : (
           children
         )}
-      </Component>
+      </MotionComponent>
     );
   }
 );
 
 Button.displayName = 'Button';
-
-export { Button };
