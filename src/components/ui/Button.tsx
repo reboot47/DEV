@@ -21,59 +21,51 @@ const LoadingSpinner = () => (
   </div>
 );
 
-// Button component
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface BaseButtonProps {
   variant?: ButtonVariant;
   isLoading?: boolean;
+  className?: string;
+  children?: React.ReactNode;
 }
 
-const ButtonBase = forwardRef<HTMLButtonElement, ButtonProps>(
+export type ButtonProps = BaseButtonProps & {
+  href?: undefined;
+} & React.ComponentPropsWithoutRef<'button'>;
+
+export type LinkButtonProps = BaseButtonProps & {
+  href: string;
+} & Omit<React.ComponentPropsWithoutRef<'a'>, 'href'>;
+
+export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonProps | LinkButtonProps>(
   ({ variant = 'primary', className = '', isLoading, children, ...props }, ref) => {
-    const MotionButton = motion.button;
+    const classes = `${variants[variant]} ${baseClassName} ${className}`;
+    const motionProps = {
+      whileTap: { scale: 0.98 },
+      className: classes,
+    };
 
-    return (
-      <MotionButton
-        ref={ref}
-        className={`${variants[variant]} ${baseClassName} ${className}`}
-        whileTap={{ scale: 0.98 }}
-        {...props}
-      >
-        {isLoading ? <LoadingSpinner /> : children}
-      </MotionButton>
-    );
-  }
-);
-
-// Link component
-interface LinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
-  variant?: ButtonVariant;
-  isLoading?: boolean;
-}
-
-const LinkBase = forwardRef<HTMLAnchorElement, LinkProps>(
-  ({ variant = 'primary', className = '', isLoading, children, ...props }, ref) => {
-    const MotionLink = motion.a;
-
-    return (
-      <MotionLink
-        ref={ref}
-        className={`${variants[variant]} ${baseClassName} ${className}`}
-        whileTap={{ scale: 0.98 }}
-        {...props}
-      >
-        {isLoading ? <LoadingSpinner /> : children}
-      </MotionLink>
-    );
-  }
-);
-
-// Export unified Button component
-export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonProps | LinkProps>(
-  (props, ref) => {
-    if ('href' in props) {
-      return <LinkBase ref={ref as React.Ref<HTMLAnchorElement>} {...(props as LinkProps)} />;
+    if ('href' in props && props.href) {
+      return (
+        <motion.a
+          ref={ref as React.Ref<HTMLAnchorElement>}
+          {...motionProps}
+          {...(props as LinkButtonProps)}
+        >
+          {isLoading ? <LoadingSpinner /> : children}
+        </motion.a>
+      );
     }
-    return <ButtonBase ref={ref as React.Ref<HTMLButtonElement>} {...(props as ButtonProps)} />;
+
+    return (
+      <motion.button
+        ref={ref as React.Ref<HTMLButtonElement>}
+        type="button"
+        {...motionProps}
+        {...(props as ButtonProps)}
+      >
+        {isLoading ? <LoadingSpinner /> : children}
+      </motion.button>
+    );
   }
 );
 
