@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import { ArrowRightIcon, CodeBracketIcon, UserGroupIcon, LightBulbIcon } from '@heroicons/react/24/outline';
 
@@ -28,70 +27,39 @@ export default function Home() {
       {/* ヒーローセクション */}
       <section className="relative overflow-hidden px-4 pt-20 pb-16 sm:px-6 lg:px-8">
         {/* 装飾的な背景要素 */}
-        <motion.div
-          className="absolute -top-40 -right-40 h-96 w-96 rounded-full"
+        <div
+          className="absolute -top-40 -right-40 h-96 w-96 rounded-full animate-pulse"
           style={{ background: 'rgba(72, 52, 212, 0.05)' }}
-          animate={{
-            scale: [1, 1.2, 1],
-            rotate: [0, 180, 0],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "linear"
-          }}
         />
-        <motion.div
-          className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full"
+        <div
+          className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full animate-pulse"
           style={{ background: 'rgba(253, 167, 223, 0.05)' }}
-          animate={{
-            scale: [1.2, 1, 1.2],
-            rotate: [0, -180, 0],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "linear"
-          }}
         />
 
         <div className="relative mx-auto max-w-7xl">
           <div className="text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="relative inline-block"
-            >
+            <div className="relative inline-block animate-fade-in">
               <h1 className="font-heading text-5xl font-bold sm:text-6xl md:text-7xl lg:text-8xl">
                 <span style={{ color: 'var(--color-navy-dark)' }}>LINE</span>
                 <span className="text-gradient">BUZZ</span>
               </h1>
-              <motion.div
-                className="absolute -bottom-2 left-0 h-1 w-0"
+              <div
+                className="absolute -bottom-2 left-0 h-1 w-full"
                 style={{ 
                   background: 'linear-gradient(to right, var(--color-navy-dark), var(--color-navy-light), var(--color-pink-light))'
                 }}
-                animate={{ width: '100%' }}
-                transition={{ duration: 1, delay: 0.5 }}
               />
-            </motion.div>
+            </div>
 
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="mx-auto mt-6 max-w-2xl text-lg sm:text-xl"
+            <p
+              className="mx-auto mt-6 max-w-2xl text-lg opacity-0 animate-fade-in-delayed sm:text-xl"
               style={{ color: 'var(--color-gray-medium)' }}
             >
               次世代の開発プラットフォーム
-            </motion.p>
+            </p>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8 }}
-              className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6"
+            <div
+              className="mt-10 flex flex-col items-center justify-center gap-4 opacity-0 animate-fade-in-delayed-more sm:flex-row sm:gap-6"
             >
               <Button
                 href="/signup"
@@ -108,7 +76,7 @@ export default function Home() {
                 ログイン
                 <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Button>
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>
@@ -116,19 +84,11 @@ export default function Home() {
       {/* 特徴セクション */}
       <section className="relative px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
-            className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3"
-          >
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((feature, index) => (
-              <motion.div
+              <div
                 key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.2 + index * 0.2 }}
-                className="group relative rounded-2xl bg-white p-6 shadow-lg transition-transform hover:-translate-y-1"
+                className="group relative rounded-2xl bg-white p-6 shadow-lg transition-all duration-300 hover:-translate-y-1"
               >
                 <div 
                   className="mb-4 inline-block rounded-lg p-3"
@@ -148,17 +108,15 @@ export default function Home() {
                 <p style={{ color: 'var(--color-gray-medium)' }}>
                   {feature.description}
                 </p>
-                <motion.div
-                  className="absolute bottom-0 left-0 h-1 w-0 rounded-b-2xl"
+                <div
+                  className="absolute bottom-0 left-0 h-1 w-0 rounded-b-2xl transition-all duration-300 group-hover:w-full"
                   style={{ 
                     background: 'linear-gradient(to right, var(--color-navy-light), var(--color-pink-light))'
                   }}
-                  whileHover={{ width: '100%' }}
-                  transition={{ duration: 0.3 }}
                 />
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
+          </div>
         </div>
       </section>
     </main>
