@@ -9,15 +9,19 @@ module.exports = {
     extend: {
       colors: {
         'navy': {
-          DEFAULT: '#1B1464',
+          dark: '#1B1464',
           light: '#4834d4',
         },
         'gray': {
-          DEFAULT: '#718093',
+          light: '#f5f6fa',
+          medium: '#718093',
+          dark: '#2f3640',
         },
         'pink': {
           light: '#FDA7DF',
-        }
+        },
+        'error': '#ff4757',
+        'success': '#2ed573',
       },
       fontFamily: {
         sans: ['var(--font-noto-sans-jp)', 'system-ui'],
