@@ -11,10 +11,11 @@ export async function POST(request: Request) {
 
     // 電話番号を国際形式に変換
     const formattedPhone = phone.startsWith('0') ? '+81' + phone.slice(1) : phone;
+    const nationalPhone = formattedPhone.replace('+81', '0');
 
     // ユーザーの重複チェック
     const existingUser = await prisma.user.findUnique({
-      where: { phone: formattedPhone }
+      where: { phone: nationalPhone }
     });
 
     if (existingUser) {
