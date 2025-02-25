@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '../../../lib/prisma';
 import { cookies } from 'next/headers';
-import { getSession } from '@/lib/session';
+import { getSession } from '../../../lib/session';
 
 export async function DELETE() {
   try {
@@ -29,13 +29,14 @@ export async function DELETE() {
 
     return NextResponse.json({ 
       success: true,
-      message: 'アカウントを削除しました'
+      message: 'アカウントが削除されました'
     });
+
   } catch (error) {
-    console.error('Delete account error:', error);
+    console.error('Account deletion error:', error);
     return NextResponse.json({ 
       success: false,
-      error: 'アカウントの削除に失敗しました'
+      error: 'アカウントの削除中にエラーが発生しました'
     }, { status: 500 });
   }
 }
