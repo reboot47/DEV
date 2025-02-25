@@ -81,8 +81,21 @@ export function PhoneVerification() {
       addDebugInfo(`APIレスポンス 内容: ${JSON.stringify(result)}`);
 
       if (!response.ok) {
-        console.error('Send code error:', result);
-        throw new Error(result.error || '認証コードの送信に失敗しました');
+        if (response.status === 400 && result.error === 'この電話番号は既に登録されています') {
+          setError(
+            <div className="text-red-500">
+              <p>{result.error}</p>
+              <p className="mt-2">
+                <a href="/login" className="text-blue-500 hover:text-blue-700 underline">
+                  ログインページへ移動
+                </a>
+              </p>
+            </div>
+          );
+        } else {
+          setError(result.error || '認証コードの送信に失敗しました');
+        }
+        return;
       }
 
       if (result.success) {
