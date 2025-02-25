@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import twilio from 'twilio';
+import twilio, { Twilio } from 'twilio';
 
 const prisma = new PrismaClient();
 
 // Twilioクライアントの初期化を try-catch で囲む
-let twilioClient;
+let twilioClient: Twilio | undefined;
 try {
   twilioClient = twilio(
     process.env.TWILIO_ACCOUNT_SID,
