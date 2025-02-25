@@ -1,71 +1,91 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { sendVerificationCode } from '@/lib/twilio';
-
-const prisma = new PrismaClient();
-
-function generateVerificationCode(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request) {
   try {
     const { phone } = await request.json();
-
-    if (!phone) {
-      return NextResponse.json(
-        { error: '電話番号は必須です' },
-        { status: 400 }
-      );
-    }
-
-    // 電話番号のフォーマットを整える（国際形式に変換）
-    let formattedPhone = phone;
-    if (phone.startsWith('0')) {
-      formattedPhone = '+81' + phone.slice(1);
-    }
     
-    console.log('Sending verification code to:', formattedPhone);
+    if (!phone) {
+      return NextResponse.json({ error: '電話番号が必要です' }, { status: 400 });
+    }
 
-    const code = generateVerificationCode();
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5分後
+    // 電話番号を国際形式に変換
+    const formattedPhone = phone.startsWith('0') ? '+81' + phone.slice(1) : phone;
 
+    // ユーザーの重複チェック
+    const existingUser = await prisma.user.findUnique({
+      where: { phone: formattedPhone }
+    });
+
+    if (existingUser) {
+      return NextResponse.json({ 
+        success: false,
+        error: 'この電話番号は既に登録されています'
+      }, { status: 400 });
+    }
+
+    // 既存の認証コードの確認
+    const existingVerification = await prisma.verificationCode.findUnique({
+      where: { phone: formattedPhone }
+    });
+
+    // 既存の認証コードがある場合、有効期限をチェック
+    if (existingVerification) {
+      const now = new Date();
+      if (existingVerification.expiresAt > now) {
+        return NextResponse.json({ 
+          success: false,
+          error: '認証コードは既に送信されています。しばらく待ってから再試行してください'
+        }, { status: 400 });
+      }
+    }
+
+    // 認証コードを生成
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Twilioクライアントの初期化とSMS送信
     try {
+      const twilioModule = await import('twilio');
+      const accountSid = process.env.TWILIO_ACCOUNT_SID;
+      const authToken = process.env.TWILIO_AUTH_TOKEN;
+      const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
+
+      const client = twilioModule.default(accountSid, authToken);
+
+      await client.messages.create({
+        body: `【LINEBUZZ】認証コード: ${verificationCode}\n※このコードは5分間有効です。`,
+        to: formattedPhone,
+        from: twilioPhoneNumber,
+      });
+
+      // SMS送信成功後にデータベースに保存
       await prisma.verificationCode.upsert({
         where: { phone: formattedPhone },
         update: {
-          code,
-          expiresAt,
+          code: verificationCode,
+          expiresAt: new Date(Date.now() + 5 * 60 * 1000),
           attempts: 0,
           verified: false,
         },
         create: {
           phone: formattedPhone,
-          code,
-          expiresAt,
+          code: verificationCode,
+          expiresAt: new Date(Date.now() + 5 * 60 * 1000),
         },
       });
-      
-      console.log('Verification code saved to database:', code);
-    } catch (dbError) {
-      console.error('Database error:', dbError);
-      throw new Error('データベースエラーが発生しました');
-    }
 
-    try {
-      await sendVerificationCode(formattedPhone, code);
-      console.log('Verification code sent successfully');
+      return NextResponse.json({ 
+        success: true,
+        message: '認証コードを送信しました'
+      });
     } catch (twilioError) {
-      console.error('Twilio error:', twilioError);
-      throw new Error('SMSの送信に失敗しました');
+      throw twilioError;
     }
 
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Error in send-code route:', error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : '認証コードの送信に失敗しました' },
-      { status: 500 }
-    );
+  } catch (error: any) {
+    return NextResponse.json({ 
+      success: false, 
+      error: error.message 
+    }, { status: 500 });
   }
 }

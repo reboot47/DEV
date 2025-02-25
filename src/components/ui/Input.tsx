@@ -17,7 +17,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           </label>
         )}
         <div className="relative">
-          <motion.input
+          <input
             ref={ref}
             className={`
               w-full px-4 py-3 rounded-lg border-2 

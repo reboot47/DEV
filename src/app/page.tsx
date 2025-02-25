@@ -94,7 +94,6 @@ export default function Home() {
               className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6"
             >
               <Button
-                as="a"
                 href="/signup"
                 className="group flex items-center gap-2"
               >
@@ -102,7 +101,6 @@ export default function Home() {
                 <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Button>
               <Button
-                as="a"
                 href="/login"
                 variant="outline"
                 className="group flex items-center gap-2"

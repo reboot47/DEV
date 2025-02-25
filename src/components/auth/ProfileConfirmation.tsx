@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 
 export function ProfileConfirmation() {
   const { signupData, setStep } = useSignup();
-  const [isLoading, setIsLoading] = useState(false);
+  const [disabled, setDisabled] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
 
@@ -36,7 +36,7 @@ export function ProfileConfirmation() {
     }
 
     try {
-      setIsLoading(true);
+      setDisabled(true);
       setError('');
 
       // データの検証
@@ -50,8 +50,8 @@ export function ProfileConfirmation() {
       });
 
       // birthDateの形式を確認
-      const birthDate = new Date(signupData.birthDate);
-      if (isNaN(birthDate.getTime())) {
+      const birthDate = signupData.birthDate ? new Date(signupData.birthDate) : null;
+      if (!birthDate || isNaN(birthDate.getTime())) {
         console.error('Invalid birth date:', signupData.birthDate);
         setError('生年月日の形式が正しくありません');
         return;
@@ -92,7 +92,7 @@ export function ProfileConfirmation() {
       console.error('Registration error:', err);
       setError(err instanceof Error ? err.message : '登録処理でエラーが発生しました');
     } finally {
-      setIsLoading(false);
+      setDisabled(false);
     }
   };
 
@@ -149,7 +149,7 @@ export function ProfileConfirmation() {
             variant="outline"
             className="flex-1"
             onClick={() => setStep('profile')}
-            disabled={isLoading}
+            disabled={disabled}
           >
             戻る
           </Button>
@@ -157,9 +157,15 @@ export function ProfileConfirmation() {
             type="button"
             className="flex-1"
             onClick={handleSubmit}
-            isLoading={isLoading}
+            disabled={disabled}
           >
-            登録を完了
+            {disabled ? (
+              <div className="flex items-center justify-center">
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : (
+              '登録を完了'
+            )}
           </Button>
         </div>
       </div>

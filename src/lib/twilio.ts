@@ -1,4 +1,5 @@
 import twilio from 'twilio';
+import 'dotenv/config';
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
@@ -8,32 +9,55 @@ if (!accountSid || !authToken || !twilioPhoneNumber) {
   throw new Error('Missing Twilio credentials');
 }
 
-console.log('Initializing Twilio client with:', {
-  accountSid,
-  phoneNumber: twilioPhoneNumber,
-  // Don't log the auth token for security reasons
-});
+console.log('=== Twilio Library Configuration ===');
+console.log('Account SID:', accountSid ? `${accountSid.slice(0, 4)}...${accountSid.slice(-4)}` : 'missing');
+console.log('Auth Token:', authToken ? 'present' : 'missing');
+console.log('Phone Number:', twilioPhoneNumber);
+console.log('=================================');
 
-export const twilioClient = twilio(accountSid, authToken);
+export const twilioClient = new twilio.Twilio(accountSid, authToken);
 
 export const sendVerificationCode = async (phoneNumber: string, code: string) => {
   try {
+    console.log('Twilio Credentials:', {
+      accountSid,
+      phoneNumber: twilioPhoneNumber,
+      hasAuthToken: !!authToken
+    });
+    
     console.log('Attempting to send SMS to:', phoneNumber);
+    
+    // 電話番号を国際形式に変換
+    const formattedPhoneNumber = phoneNumber.startsWith('+')
+      ? phoneNumber
+      : phoneNumber.startsWith('0')
+        ? '+81' + phoneNumber.slice(1)
+        : '+81' + phoneNumber;
+
+    console.log('Formatted phone number:', formattedPhoneNumber);
     
     const message = await twilioClient.messages.create({
       body: `【LINEBUZZ】認証コード: ${code}\n※このコードは5分間有効です。`,
       from: twilioPhoneNumber,
-      to: phoneNumber,
+      to: formattedPhoneNumber,
     });
 
-    console.log('SMS sent successfully, message SID:', message.sid);
+    console.log('SMS sent successfully, message details:', {
+      sid: message.sid,
+      status: message.status,
+      errorCode: message.errorCode,
+      errorMessage: message.errorMessage
+    });
+    
     return message.sid;
   } catch (error) {
+    console.error('Twilio error full details:', error);
     console.error('Twilio error details:', {
       code: (error as any).code,
       message: (error as any).message,
       status: (error as any).status,
       moreInfo: (error as any).moreInfo,
+      raw: error
     });
     
     // Twilioのエラーメッセージを日本語に変換

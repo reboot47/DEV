@@ -38,7 +38,7 @@ export function ProfileSetup() {
     defaultValues: {
       name: '',
       gender: 'other',
-      birthDate: null,
+      birthDate: undefined,
     },
   });
 
@@ -246,9 +246,15 @@ export function ProfileSetup() {
           <Button
             type="submit"
             className="flex-1"
-            isLoading={isLoading}
+            disabled={isLoading}
           >
-            次へ
+            {isLoading ? (
+              <div className="flex items-center justify-center">
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : (
+              '次へ'
+            )}
           </Button>
         </div>
       </form>

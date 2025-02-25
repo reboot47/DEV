@@ -58,10 +58,16 @@ export const LoginForm = () => {
 
       <Button
         onClick={handleLogin}
-        isLoading={isLoading}
+        disabled={isLoading}
         className="w-full"
       >
-        ログイン
+        {isLoading ? (
+          <div className="flex items-center justify-center">
+            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : (
+          'ログイン'
+        )}
       </Button>
 
       <p className="text-center text-sm text-gray-medium">

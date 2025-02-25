@@ -68,7 +68,7 @@ export function PhoneVerification() {
       setError('');
       addDebugInfo(`電話番号送信: ${data.phone}`);
 
-      const response = await fetch('/api/auth/verify', {
+      const response = await fetch('/api/auth/send-code', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -76,37 +76,25 @@ export function PhoneVerification() {
         body: JSON.stringify({ phone: data.phone }),
       });
 
-      const responseData = await response.json();
+      addDebugInfo(`APIレスポンス ステータス: ${response.status}`);
+      const result = await response.json();
+      addDebugInfo(`APIレスポンス 内容: ${JSON.stringify(result)}`);
 
       if (!response.ok) {
-        throw new Error(responseData.error || '認証コードの送信に失敗しました');
+        console.error('Send code error:', result);
+        throw new Error(result.error || '認証コードの送信に失敗しました');
       }
 
-      setPhone(data.phone);
-      setVerificationStep('code');
-      setResendTimer(60);
-
-      // タイマーの開始
-      const timer = setInterval(() => {
-        setResendTimer(prev => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      addDebugInfo('認証コード送信成功');
-
-      // 開発環境では認証コードを表示
-      if (process.env.NODE_ENV === 'development') {
-        setError('開発環境用認証コード: 123456');
+      if (result.success) {
+        setPhone(data.phone);
+        setVerificationStep('code');
+        setResendTimer(60);
+      } else {
+        throw new Error(result.error || '認証コードの送信に失敗しました');
       }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '認証コードの送信に失敗しました';
-      addDebugInfo(`エラー発生: ${errorMessage}`);
-      setError(errorMessage);
+    } catch (error) {
+      console.error('Send code error:', error);
+      setError(error instanceof Error ? error.message : '認証コードの送信に失敗しました');
     } finally {
       setIsLoading(false);
     }
@@ -119,16 +107,6 @@ export function PhoneVerification() {
       setError('');
       addDebugInfo(`認証コード検証開始: ${data.code}`);
 
-      // 開発環境での自動検証
-      if (process.env.NODE_ENV === 'development' && data.code === '123456') {
-        addDebugInfo('開発環境での認証成功');
-        
-        // 電話番号を保存してパスワード設定ステップへ
-        updateSignupData({ phone });
-        setStep('password');
-        return;
-      }
-
       const response = await fetch('/api/auth/verify-code', {
         method: 'POST',
         headers: {
@@ -140,23 +118,27 @@ export function PhoneVerification() {
         }),
       });
 
-      const responseData = await response.json();
-      addDebugInfo(`APIレスポンス: ${JSON.stringify(responseData)}`);
+      const result = await response.json();
+      addDebugInfo(`APIレスポンス: ${JSON.stringify(result)}`);
 
       if (!response.ok) {
-        throw new Error(responseData.error || '認証に失敗しました');
+        console.error('Verify code error:', result);
+        throw new Error(result.error || '認証に失敗しました');
       }
 
-      addDebugInfo('認証成功');
-      console.log('認証成功');
-      
-      // 電話番号を保存してパスワード設定ステップへ
-      updateSignupData({ phone });
-      setStep('password');
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '認証コードの検証に失敗しました';
-      addDebugInfo(`エラー発生: ${errorMessage}`);
-      setError(errorMessage);
+      if (result.success) {
+        addDebugInfo('認証成功');
+        console.log('認証成功');
+        
+        // 電話番号を保存してパスワード設定ステップへ
+        updateSignupData({ phone });
+        setStep('password');
+      } else {
+        throw new Error(result.error || '認証に失敗しました');
+      }
+    } catch (error) {
+      console.error('Verify code error:', error);
+      setError(error instanceof Error ? error.message : '認証コードの検証に失敗しました');
     } finally {
       setIsLoading(false);
     }
@@ -191,9 +173,15 @@ export function PhoneVerification() {
             <Button
               type="submit"
               className="w-full"
-              isLoading={isLoading}
+              disabled={isLoading}
             >
-              認証コードを送信
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : (
+                '認証コードを送信'
+              )}
             </Button>
           </form>
         ) : step === 'code' ? (
@@ -205,26 +193,6 @@ export function PhoneVerification() {
               {phone}に送信された認証コードを入力してください
             </p>
 
-            {process.env.NODE_ENV === 'development' && (
-              <div className="rounded-md bg-blue-50 p-4">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <h3 className="text-sm font-medium text-blue-800">
-                      開発環境
-                    </h3>
-                    <div className="mt-2 text-sm text-blue-700">
-                      <p>認証コード: 123456</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
             <Input
               label="認証コード"
               placeholder="123456"
@@ -232,18 +200,22 @@ export function PhoneVerification() {
               {...codeForm.register('code')}
             />
 
-            {error && error.includes('開発環境') ? (
-              <p className="text-sm text-blue-600">{error}</p>
-            ) : error ? (
+            {error && (
               <p className="text-sm text-red-500">{error}</p>
-            ) : null}
+            )}
 
             <Button
               type="submit"
               className="w-full"
-              isLoading={isLoading}
+              disabled={isLoading}
             >
-              認証する
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : (
+                '認証する'
+              )}
             </Button>
 
             <div className="flex items-center justify-between">
@@ -257,7 +229,7 @@ export function PhoneVerification() {
 
               <Button
                 type="button"
-                variant="text"
+                variant="secondary"
                 onClick={handleResendCode}
                 disabled={resendTimer > 0 || isLoading}
               >
