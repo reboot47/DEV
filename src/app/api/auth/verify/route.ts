@@ -86,7 +86,8 @@ export async function POST(request: Request) {
         });
 
         console.log('SMS sent successfully:', message.sid);
-      } catch (twilioError) {
+      } catch (error) {
+        const twilioError = error as Error;
         console.error('Twilio SMS sending error:', twilioError);
         return NextResponse.json(
           { 
@@ -109,11 +110,12 @@ export async function POST(request: Request) {
       code: process.env.NODE_ENV === 'development' ? verificationCode : undefined,
     });
   } catch (error) {
-    console.error('Phone verification error:', error);
+    const serverError = error as Error;
+    console.error('Phone verification error:', serverError);
     return NextResponse.json(
       { 
         error: '認証コードの送信に失敗しました',
-        details: error instanceof Error ? error.message : '不明なエラー'
+        details: serverError.message
       },
       { status: 500 }
     );
