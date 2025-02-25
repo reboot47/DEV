@@ -32,6 +32,7 @@ export function PhoneVerification() {
   const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null);
   const [resendTimer, setResendTimer] = useState(0);
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
+  const [showLoginLink, setShowLoginLink] = useState(false);
 
   const addDebugInfo = (info: string) => {
     setDebugInfo(prev => [...prev, `${new Date().toISOString()}: ${info}`]);
@@ -82,16 +83,8 @@ export function PhoneVerification() {
 
       if (!response.ok) {
         if (response.status === 400 && result.error === 'この電話番号は既に登録されています') {
-          setError(
-            <div className="text-red-500">
-              <p>{result.error}</p>
-              <p className="mt-2">
-                <a href="/login" className="text-blue-500 hover:text-blue-700 underline">
-                  ログインページへ移動
-                </a>
-              </p>
-            </div>
-          );
+          setError(result.error);
+          setShowLoginLink(true);
         } else {
           setError(result.error || '認証コードの送信に失敗しました');
         }
@@ -181,7 +174,16 @@ export function PhoneVerification() {
               {...phoneForm.register('phone')}
             />
             {error && (
-              <p className="text-sm text-red-500">{error}</p>
+              <div className="text-red-500">
+                <p>{error}</p>
+                {showLoginLink && (
+                  <p className="mt-2">
+                    <a href="/login" className="text-blue-500 hover:text-blue-700 underline">
+                      ログインページへ移動
+                    </a>
+                  </p>
+                )}
+              </div>
             )}
             <Button
               type="submit"
@@ -214,7 +216,16 @@ export function PhoneVerification() {
             />
 
             {error && (
-              <p className="text-sm text-red-500">{error}</p>
+              <div className="text-red-500">
+                <p>{error}</p>
+                {showLoginLink && (
+                  <p className="mt-2">
+                    <a href="/login" className="text-blue-500 hover:text-blue-700 underline">
+                      ログインページへ移動
+                    </a>
+                  </p>
+                )}
+              </div>
             )}
 
             <Button
